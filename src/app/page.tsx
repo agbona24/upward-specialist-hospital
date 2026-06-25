@@ -324,7 +324,7 @@ export default function Home() {
                 </div>
 
                 <h1 className="text-4xl font-bold leading-[1.15] sm:text-5xl lg:text-6xl gradient-text">
-                  World-Class Care,<br />Close to Home
+                  Quality Specialist Care —<br />Now Easier to Find
                 </h1>
 
                 <p className="max-w-lg text-base leading-8 text-[#cce5f5]">
@@ -344,7 +344,7 @@ export default function Home() {
 
                 {/* Trust badges */}
                 <div className="flex flex-wrap gap-3 pt-2">
-                  {['✓ Open 24/7', '✓ 35+ Specialists', '✓ Trusted by Families', '✓ Emergency Ready'].map(b => (
+                  {['✓ Open 24/7', '✓ Specialist Doctors', '✓ Trusted by Families', '✓ Emergency Ready'].map(b => (
                     <span key={b} className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white">{b}</span>
                   ))}
                 </div>
@@ -369,8 +369,8 @@ export default function Home() {
 
                 {/* Floating stat pills */}
                 <div className="glass absolute -left-4 top-8 rounded-2xl px-4 py-3 shadow-lg hidden sm:block">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[#a8d8f0]">Patients Served</p>
-                  <p className="text-2xl font-bold text-white">1,200+</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[#a8d8f0]">We Serve</p>
+                  <p className="text-sm font-bold text-white">Families &amp; Communities</p>
                 </div>
 
                 <div className="glass absolute -right-4 bottom-8 rounded-2xl px-4 py-3 shadow-lg hidden sm:block">
@@ -393,17 +393,26 @@ export default function Home() {
         <section className="bg-white shadow-sm border-b border-slate-100">
           <div className="mx-auto max-w-7xl">
             <div className="grid grid-cols-2 divide-x divide-slate-100 md:grid-cols-4">
-              {[
-                { value: '24/7', label: 'Emergency Care' },
-                { value: '35+', label: 'Specialist Doctors' },
-                { value: '1,200+', label: 'Patients Served' },
-                { value: '6+', label: 'Specialties' },
-              ].map((s, i) => (
-                <div key={i} className="stat-card py-6 text-center">
-                  <p className="text-2xl sm:text-3xl font-bold text-[#1B5E8C]">{s.value}</p>
-                  <p className="mt-1 text-xs sm:text-sm text-slate-500 font-medium">{s.label}</p>
-                </div>
-              ))}
+              {/* 24/7 — factual */}
+              <div className="stat-card py-7 text-center">
+                <p className="text-2xl sm:text-3xl font-bold text-[#1B5E8C]">24/7</p>
+                <p className="mt-1 text-xs sm:text-sm text-slate-500 font-medium">Emergency Care</p>
+              </div>
+              {/* Label only — no invented number */}
+              <div className="stat-card py-7 text-center flex flex-col items-center justify-center gap-2">
+                <svg viewBox="0 0 24 24" className="w-7 h-7 text-[#1B5E8C]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="7" r="4" /><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" /></svg>
+                <p className="text-xs sm:text-sm text-slate-600 font-semibold">Specialist Doctors</p>
+              </div>
+              {/* Label only — no invented number */}
+              <div className="stat-card py-7 text-center flex flex-col items-center justify-center gap-2">
+                <svg viewBox="0 0 24 24" className="w-7 h-7 text-[#1B5E8C]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" /></svg>
+                <p className="text-xs sm:text-sm text-slate-600 font-semibold">Families Served</p>
+              </div>
+              {/* 6+ specialties — verifiable */}
+              <div className="stat-card py-7 text-center">
+                <p className="text-2xl sm:text-3xl font-bold text-[#1B5E8C]">6+</p>
+                <p className="mt-1 text-xs sm:text-sm text-slate-500 font-medium">Specialties</p>
+              </div>
             </div>
           </div>
         </section>
@@ -444,32 +453,16 @@ export default function Home() {
             <p className="mx-auto max-w-xl text-base leading-8 text-slate-600">A coordinated team of specialists delivering premium care for every stage of health.</p>
           </div>
 
-          {/* Mobile horizontal scroll */}
-          <div className="md:hidden -mx-5 px-5 flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
+          {/* Single responsive grid — renders each service exactly once */}
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {services.map(s => (
-              <div key={s.title} className="snap-start shrink-0 w-72 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm service-card">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E7F1F8] text-[#1B5E8C]">
+              <div key={s.title} className="group rounded-3xl border border-slate-100 bg-white p-6 shadow-sm service-card cursor-pointer">
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E7F1F8] text-[#1B5E8C] group-hover:bg-[#1B5E8C] group-hover:text-white transition-colors">
                   {serviceIcons[s.title]}
                 </div>
                 <h3 className="text-base font-bold text-slate-900">{s.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{s.description}</p>
-                <a href="#contact" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#1B5E8C] hover:underline">
-                  Book now <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12,5 19,12 12,19" /></svg>
-                </a>
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop grid */}
-          <div className="hidden md:grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {services.map(s => (
-              <div key={s.title} className="group rounded-3xl border border-slate-100 bg-white p-7 shadow-sm service-card cursor-pointer">
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E7F1F8] text-[#1B5E8C] group-hover:bg-[#1B5E8C] group-hover:text-white transition-colors">
-                  {serviceIcons[s.title]}
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">{s.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-slate-600">{s.description}</p>
-                <a href="#contact" className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[#1B5E8C] hover:underline">
+                <p className="mt-2 text-sm leading-7 text-slate-600">{s.description}</p>
+                <a href="#contact" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#1B5E8C] hover:underline">
                   Book now <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12,5 19,12 12,19" /></svg>
                 </a>
               </div>
@@ -618,6 +611,44 @@ export default function Home() {
               <a href="tel:08028611472" className="flex items-center gap-2 rounded-2xl border-2 border-white/40 bg-white/10 px-8 py-4 text-sm font-semibold text-white hover:bg-white/20 transition-colors w-full sm:w-auto justify-center">
                 <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.56-.56a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" /></svg>
                 0802 861 1472
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FIND US / GOOGLE MAP ──────────────────────────── */}
+        <section className="bg-white px-5 py-16 sm:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-8 text-center space-y-2">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#1B5E8C]">Our Location</p>
+              <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">Find Us in Idimu, Lagos</h2>
+              <p className="text-sm text-slate-500">Waidi Ewe-Nla Street, Isheri Olofin, Lagos</p>
+            </div>
+            <div className="overflow-hidden rounded-3xl border border-slate-100 shadow-lg">
+              <iframe
+                title="Upward Specialist Hospital Location"
+                src="https://maps.google.com/maps?q=Isheri+Olofin,+Lagos,+Nigeria&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                width="100%"
+                height="380"
+                style={{ border: 0, display: 'block' }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
+              <div className="flex items-center gap-2 text-slate-600">
+                <svg viewBox="0 0 24 24" className="w-4 h-4 text-[#1B5E8C] shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                Waidi Ewe-Nla Street, Isheri Olofin, Lagos
+              </div>
+              <a
+                href="https://maps.google.com/?q=Isheri+Olofin,+Lagos,+Nigeria"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 rounded-xl border border-[#1B5E8C] px-5 py-2.5 font-semibold text-[#1B5E8C] hover:bg-[#1B5E8C] hover:text-white transition-colors"
+              >
+                Open in Google Maps
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15,3 21,3 21,9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
               </a>
             </div>
           </div>
