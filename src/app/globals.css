@@ -1,0 +1,204 @@
+@import "tailwindcss";
+
+:root {
+  --background: #F0F7FF;
+  --foreground: #1a2332;
+  --blue-primary: #1B5E8C;
+  --blue-dark: #134466;
+  --blue-light: #E7F1F8;
+  --green-accent: #10B981;
+  --font-inter: "Inter", sans-serif;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+button, input, select { font: inherit; }
+
+/* ── ECG / heartbeat line ──────────────────────────────────── */
+.ecg-path {
+  stroke-dasharray: 900;
+  stroke-dashoffset: 900;
+  animation: ecg-draw 3s linear infinite;
+}
+@keyframes ecg-draw {
+  0%   { stroke-dashoffset: 900; opacity: 1; }
+  75%  { stroke-dashoffset: 0;   opacity: 1; }
+  90%  { opacity: 0.4; }
+  100% { stroke-dashoffset: -900; opacity: 0; }
+}
+
+/* ── Heartbeat pulse ───────────────────────────────────────── */
+.heart-pulse {
+  animation: heart-beat 1.4s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes heart-beat {
+  0%, 100% { transform: scale(1); }
+  14%  { transform: scale(1.18); }
+  28%  { transform: scale(1); }
+  42%  { transform: scale(1.12); }
+  56%  { transform: scale(1); }
+}
+
+/* ── Pulse rings (expanding circles) ──────────────────────── */
+.pulse-ring {
+  animation: pulse-out 2.4s ease-out infinite;
+  transform-origin: center;
+}
+.pulse-ring-2 { animation-delay: 0.8s; }
+.pulse-ring-3 { animation-delay: 1.6s; }
+@keyframes pulse-out {
+  0%   { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* ── Floating icons ────────────────────────────────────────── */
+.float-icon-1 { animation: float-1 6s ease-in-out infinite; }
+.float-icon-2 { animation: float-2 8s ease-in-out infinite; }
+.float-icon-3 { animation: float-3 7s ease-in-out infinite; }
+.float-icon-4 { animation: float-4 9s ease-in-out infinite; }
+
+@keyframes float-1 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33%  { transform: translate(6px, -12px) rotate(5deg); }
+  66%  { transform: translate(-4px, -6px) rotate(-3deg); }
+}
+@keyframes float-2 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50%  { transform: translate(-8px, -14px) rotate(-6deg); }
+}
+@keyframes float-3 {
+  0%, 100% { transform: translate(0, 0); }
+  40%  { transform: translate(10px, -10px); }
+  80%  { transform: translate(-6px, -4px); }
+}
+@keyframes float-4 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(-10px, -8px) rotate(8deg); }
+  75%  { transform: translate(8px, -12px) rotate(-4deg); }
+}
+
+/* ── Rotate slow ───────────────────────────────────────────── */
+.rotate-slow { animation: rotate-slow 20s linear infinite; }
+@keyframes rotate-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── DNA strand ────────────────────────────────────────────── */
+.dna-strand { animation: dna-wave 3s ease-in-out infinite; }
+.dna-strand-2 { animation: dna-wave 3s ease-in-out infinite reverse; animation-delay: 0.5s; }
+@keyframes dna-wave {
+  0%, 100% { d: path("M 10 10 Q 30 50 10 90"); }
+  50%       { d: path("M 10 10 Q -10 50 10 90"); }
+}
+
+/* ── Counter fade-up ───────────────────────────────────────── */
+.stat-card {
+  animation: fade-up 0.6s ease-out both;
+}
+.stat-card:nth-child(2) { animation-delay: 0.1s; }
+.stat-card:nth-child(3) { animation-delay: 0.2s; }
+.stat-card:nth-child(4) { animation-delay: 0.3s; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Slide-in left / right ─────────────────────────────────── */
+.slide-left  { animation: slide-left  0.7s ease-out both; }
+.slide-right { animation: slide-right 0.7s ease-out both; }
+@keyframes slide-left  {
+  from { opacity: 0; transform: translateX(-30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slide-right {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Shimmer for skeleton loaders ──────────────────────────── */
+.shimmer {
+  background: linear-gradient(90deg, #e2ecf5 25%, #cce0f0 50%, #e2ecf5 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Service card hover ────────────────────────────────────── */
+.service-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.service-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(27, 94, 140, 0.14);
+}
+
+/* ── Mobile bottom nav safe area ───────────────────────────── */
+.mobile-nav-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Gradient text ─────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #ffffff 0%, #a8d8f0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Glass card ────────────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+/* ── Blob background ───────────────────────────────────────── */
+.animate-blob {
+  animation: blob 14s ease-in-out infinite;
+}
+@keyframes blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(12px, -12px) scale(1.04); }
+  66%  { transform: translate(-12px, 10px) scale(0.96); }
+}
+
+/* ── Progress bar ──────────────────────────────────────────── */
+.progress-bar { animation: grow-bar 1.2s ease-out both; }
+@keyframes grow-bar {
+  from { width: 0%; }
+}
+
+/* ── Mobile app tabs ───────────────────────────────────────── */
+.tab-active {
+  color: #1B5E8C;
+}
+.tab-active svg {
+  stroke: #1B5E8C;
+}
+.tab-active span {
+  color: #1B5E8C;
+}
