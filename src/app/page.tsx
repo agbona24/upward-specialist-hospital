@@ -578,6 +578,32 @@ function RiskTool({ onBook }: { onBook: () => void }) {
   );
 }
 
+/* ─── Doctors data ─────────────────────────────────────────── */
+const doctors = [
+  { name: 'Dr. A. Okonkwo', specialty: 'General Medicine',       exp: '12 yrs', avail: 'Mon–Fri', initials: 'AO', today: true  },
+  { name: 'Dr. F. Adeyemi', specialty: 'Surgery',                exp: '18 yrs', avail: 'Mon–Sat', initials: 'FA', today: true  },
+  { name: 'Dr. N. Bello',   specialty: 'Maternity & Gynaecology',exp: '9 yrs',  avail: 'Tue–Sat', initials: 'NB', today: false },
+  { name: 'Dr. K. Ibrahim', specialty: 'Paediatrics',            exp: '7 yrs',  avail: 'Mon–Fri', initials: 'KI', today: true  },
+  { name: 'Dr. C. Eze',     specialty: 'Diagnostics & Lab',      exp: '10 yrs', avail: 'Mon–Sat', initials: 'CE', today: true  },
+  { name: 'Dr. E. Lawal',   specialty: 'Emergency Care',         exp: '15 yrs', avail: '24 / 7',  initials: 'EL', today: true  },
+];
+
+/* ─── FAQ data ──────────────────────────────────────────────── */
+const faqs = [
+  { q: 'Do I need a referral to see a specialist?',
+    a: 'No referral needed. You can book directly with any of our specialists online or by calling 0802 861 1472.' },
+  { q: 'Does the hospital accept HMO / health insurance?',
+    a: 'Yes. We accept major HMO plans and health insurance. Call us to confirm your specific plan is covered before your visit.' },
+  { q: 'What should I bring to my first appointment?',
+    a: "Bring a valid ID, any previous test results or medical records, and a list of your current medications. For maternity or paediatric visits, bring your health card or the baby's vaccination booklet." },
+  { q: 'Is parking available at the hospital?',
+    a: 'Yes, free patient parking is available on-site. Our front-desk team will direct you upon arrival.' },
+  { q: 'How do I reach the emergency unit?',
+    a: 'Walk in directly at any time — the emergency unit is open 24 hours, 7 days a week. You can also call 0802 861 1472 and our team will assist immediately.' },
+  { q: 'How long does a consultation typically take?',
+    a: 'Standard consultations run 20–40 minutes. If tests or procedures are requested, allow extra time. We space appointments carefully to minimise waiting.' },
+];
+
 /* ─── Page ─────────────────────────────────────────────────── */
 export default function Home() {
   const [menuOpen, setMenuOpen]         = useState(false);
@@ -591,6 +617,10 @@ export default function Home() {
   const [bookDone, setBookDone]         = useState(false);
   const [bookData, setBookData]         = useState({ service: '', doctor: '', date: '', name: '', phone: '' });
   const [activeTool, setActiveTool]     = useState<string | null>(null);
+  const [doctorSearch, setDoctorSearch] = useState('');
+  const [doctorSpec, setDoctorSpec]     = useState('All Specialties');
+  const [openFaq, setOpenFaq]           = useState<number | null>(null);
+  const [openTip, setOpenTip]           = useState<number | null>(null);
 
   useScrollReveal();
 
@@ -781,6 +811,36 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ── TRUST BADGES ──────────────────────────────────── */}
+        <div className="border-b border-slate-100 bg-white" data-reveal>
+          <div className="mx-auto max-w-7xl px-5 py-5 sm:px-8">
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+              {[
+                { label: 'MDCN Registered',         icon: (
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9,12 11,14 15,10" /></svg>
+                )},
+                { label: 'NMA Member',               icon: (
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="8" r="4" /><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2" /><line x1="12" y1="14" x2="12" y2="20" /></svg>
+                )},
+                { label: 'Lagos State MOH Licensed', icon: (
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="9" /><line x1="9" y1="12" x2="15" y2="12" /><line x1="9" y1="15" x2="13" y2="15" /></svg>
+                )},
+                { label: 'HEFAMAA Accredited',       icon: (
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><polyline points="9,12 11,14 15,10" /></svg>
+                )},
+                { label: '24/7 Emergency Ready',     icon: (
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12,6 12,12 16,14" /></svg>
+                )},
+              ].map(b => (
+                <div key={b.label} className="flex items-center gap-2 text-slate-500">
+                  <span className="text-[#1B5E8C]">{b.icon}</span>
+                  <span className="text-xs font-semibold">{b.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* ── ABOUT ─────────────────────────────────────────── */}
         <section id="about" className="mx-auto max-w-7xl px-5 py-16 sm:px-8" data-reveal>
           <div className="rounded-3xl bg-gradient-to-r from-[#E7F1F8] to-white p-8 sm:p-12 border border-slate-100 shadow-sm">
@@ -841,47 +901,90 @@ export default function Home() {
               <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">Meet Our Specialist Team</h2>
               <p className="mx-auto max-w-xl text-base leading-8 text-slate-600">Experienced, board-certified doctors committed to your health.</p>
             </div>
-            <div className="mb-10 rounded-3xl bg-[#E7F1F8] p-5" data-reveal>
+            <div className="mb-8 rounded-3xl bg-[#E7F1F8] p-5" data-reveal>
               <div className="flex flex-col gap-3 sm:flex-row">
-                <input type="search" placeholder="Search by name or specialty..." className="flex-1 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-700 outline-none focus:border-[#1B5E8C] focus:ring-2 focus:ring-[#1B5E8C]/20" />
-                <select className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-700 outline-none focus:border-[#1B5E8C] sm:w-48">
-                  <option>All Specialties</option>
-                  {services.map(s => <option key={s.title}>{s.title}</option>)}
-                </select>
-                <button className="rounded-2xl bg-[#1B5E8C] px-8 py-4 text-sm font-bold text-white hover:bg-[#134466] active:scale-95 transition-all">Search</button>
-              </div>
-            </div>
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {[
-                { name: 'Dr. A. Okonkwo', specialty: 'General Medicine', exp: '12 yrs', avail: 'Mon–Fri', initials: 'AO' },
-                { name: 'Dr. F. Adeyemi', specialty: 'Surgery', exp: '18 yrs', avail: 'Mon–Sat', initials: 'FA' },
-                { name: 'Dr. N. Bello', specialty: 'Maternity & Gynaecology', exp: '9 yrs', avail: 'Tue–Sat', initials: 'NB' },
-              ].map((doc, i) => (
-                <div key={doc.name} data-reveal data-delay={String(i)}
-                  className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm active:scale-95 transition-all">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1B5E8C] to-[#2876a8] text-white text-xl font-bold shrink-0">{doc.initials}</div>
-                    <div>
-                      <h3 className="font-bold text-slate-900">{doc.name}</h3>
-                      <p className="text-sm text-[#1B5E8C] font-medium">{doc.specialty}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4 text-xs text-slate-500 mb-5">
-                    <span className="flex items-center gap-1">
-                      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12,6 12,12 16,14" /></svg>
-                      {doc.exp} experience
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                      {doc.avail}
-                    </span>
-                  </div>
-                  <a href="#book" className="flex w-full items-center justify-center rounded-2xl bg-[#E7F1F8] py-3.5 text-sm font-bold text-[#1B5E8C] hover:bg-[#1B5E8C] hover:text-white active:scale-95 transition-all">
-                    Book Appointment
-                  </a>
+                <div className="relative flex-1">
+                  <svg viewBox="0 0 24 24" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <input
+                    type="search"
+                    value={doctorSearch}
+                    onChange={e => setDoctorSearch(e.target.value)}
+                    placeholder="Search by name or specialty…"
+                    className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-5 py-4 text-sm text-slate-700 outline-none focus:border-[#1B5E8C] focus:ring-2 focus:ring-[#1B5E8C]/20 transition-all"
+                  />
                 </div>
-              ))}
+                <div className="relative sm:w-52">
+                  <select
+                    value={doctorSpec}
+                    onChange={e => setDoctorSpec(e.target.value)}
+                    className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-700 outline-none focus:border-[#1B5E8C] focus:ring-2 focus:ring-[#1B5E8C]/20 transition-all">
+                    <option>All Specialties</option>
+                    {services.map(s => <option key={s.title}>{s.title}</option>)}
+                  </select>
+                  <svg className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="6,9 12,15 18,9" /></svg>
+                </div>
+              </div>
+              {(doctorSearch || doctorSpec !== 'All Specialties') && (
+                <button onClick={() => { setDoctorSearch(''); setDoctorSpec('All Specialties'); }}
+                  className="mt-3 text-xs font-semibold text-[#1B5E8C] hover:underline">
+                  ✕ Clear filters
+                </button>
+              )}
             </div>
+
+            {(() => {
+              const q = doctorSearch.toLowerCase();
+              const filtered = doctors.filter(d =>
+                (doctorSpec === 'All Specialties' || d.specialty === doctorSpec) &&
+                (!q || d.name.toLowerCase().includes(q) || d.specialty.toLowerCase().includes(q))
+              );
+              return filtered.length > 0 ? (
+                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                  {filtered.map((doc, i) => (
+                    <div key={doc.name} data-reveal data-delay={String(i % 3)}
+                      className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm active:scale-95 transition-all">
+                      <div className="flex items-center gap-4 mb-3">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1B5E8C] to-[#2876a8] text-white text-xl font-bold shrink-0">{doc.initials}</div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-slate-900 truncate">{doc.name}</h3>
+                          <p className="text-sm text-[#1B5E8C] font-medium">{doc.specialty}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mb-5">
+                        <div className="flex gap-4 text-xs text-slate-500">
+                          <span className="flex items-center gap-1">
+                            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12,6 12,12 16,14" /></svg>
+                            {doc.exp}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                            {doc.avail}
+                          </span>
+                        </div>
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${doc.today ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                          {doc.today ? '● Available today' : '○ Off today'}
+                        </span>
+                      </div>
+                      <a href="#book" className="flex w-full items-center justify-center rounded-2xl bg-[#E7F1F8] py-3.5 text-sm font-bold text-[#1B5E8C] hover:bg-[#1B5E8C] hover:text-white active:scale-95 transition-all">
+                        Book Appointment
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-3 py-16 text-center">
+                  <svg viewBox="0 0 48 48" className="w-14 h-14 text-slate-200" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="22" cy="22" r="16" /><line x1="34" y1="34" x2="44" y2="44" /></svg>
+                  <p className="font-bold text-slate-600">No doctors match your search</p>
+                  <p className="text-sm text-slate-400">Try a different name or specialty</p>
+                  <button onClick={() => { setDoctorSearch(''); setDoctorSpec('All Specialties'); }}
+                    className="mt-2 rounded-2xl bg-[#E7F1F8] px-6 py-3 text-sm font-semibold text-[#1B5E8C] hover:bg-[#1B5E8C] hover:text-white transition-all">
+                    Show all doctors
+                  </button>
+                </div>
+              );
+            })()}
           </div>
         </section>
 
@@ -919,6 +1022,72 @@ export default function Home() {
                 </button>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* ── HEALTH TIPS ───────────────────────────────────── */}
+        <section className="bg-white py-16 px-5 sm:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-10 text-center space-y-3" data-reveal>
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#1B5E8C]">Your Health</p>
+              <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">Health Tips &amp; Guidance</h2>
+              <p className="mx-auto max-w-xl text-sm leading-7 text-slate-500">Quick, doctor-approved health guidance to help you and your family stay well.</p>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-3" data-reveal>
+              {[
+                {
+                  tag: 'Emergency Signs',
+                  tagColor: 'bg-red-100 text-red-700',
+                  title: '5 Symptoms You Should Never Ignore',
+                  preview: 'Chest pain, sudden vision changes, and severe headache are among the symptoms that demand immediate medical attention.',
+                  full: 'Seek emergency care immediately if you experience: (1) Chest pain or pressure lasting more than a few minutes. (2) Sudden blurred vision or loss of vision. (3) Severe, sudden headache unlike any you\'ve had before. (4) Difficulty breathing or shortness of breath at rest. (5) Sudden numbness or weakness on one side of your body. These can be signs of a heart attack or stroke — every minute counts.',
+                  icon: '🚨',
+                },
+                {
+                  tag: 'Heart Health',
+                  tagColor: 'bg-rose-100 text-rose-700',
+                  title: 'Managing Hypertension Naturally',
+                  preview: 'Small daily changes — less salt, more movement, better sleep — can significantly lower your blood pressure without medication alone.',
+                  full: 'Lifestyle changes that help control blood pressure: (1) Reduce salt intake — aim for less than 5g per day. (2) Exercise for at least 30 minutes most days (walking counts). (3) Maintain a healthy weight — even losing 5–10 kg can make a measurable difference. (4) Limit alcohol and avoid smoking. (5) Manage stress through rest, prayer, and social support. (6) Eat more fruits, vegetables, and whole grains. Always work with your doctor — medication may still be needed.',
+                  icon: '❤️',
+                },
+                {
+                  tag: 'Child Health',
+                  tagColor: 'bg-blue-100 text-blue-700',
+                  title: 'When to Take Your Child to A&E',
+                  preview: 'Knowing the difference between a sick child who can wait for a GP and one who needs emergency care can save a life.',
+                  full: 'Take your child to A&E immediately if they have: (1) Difficulty breathing or very fast breathing. (2) A seizure (convulsion) — even if it stops quickly. (3) Persistent high fever in a baby under 3 months. (4) Severe dehydration — no wet nappy in 8+ hours, sunken eyes, very dry mouth. (5) Loss of consciousness or unusual drowsiness. (6) A severe allergic reaction (swollen face, hives, breathing difficulty). For milder illness — fever in older children, vomiting, diarrhoea — a scheduled doctor\'s visit is usually fine.',
+                  icon: '👶',
+                },
+              ].map((tip, i) => (
+                <div key={tip.title} className="rounded-3xl border border-slate-100 bg-[#F8FBFF] p-6 flex flex-col gap-4 service-card">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-3xl">{tip.icon}</span>
+                    <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide ${tip.tagColor}`}>{tip.tag}</span>
+                  </div>
+                  <h3 className="font-bold text-slate-900 leading-snug">{tip.title}</h3>
+                  <p className="text-sm leading-7 text-slate-600">{tip.preview}</p>
+
+                  <div className={`overflow-hidden transition-all duration-500 ${openTip === i ? 'max-h-[600px]' : 'max-h-0'}`}>
+                    <p className="text-sm leading-7 text-slate-600 mt-1 pt-3 border-t border-slate-100">
+                      {tip.full}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-auto pt-2">
+                    <button
+                      onClick={() => setOpenTip(openTip === i ? null : i)}
+                      className="text-sm font-bold text-[#1B5E8C] hover:underline transition-colors"
+                    >
+                      {openTip === i ? 'Show less ↑' : 'Read more ↓'}
+                    </button>
+                    <a href="#book" className="rounded-xl bg-[#E7F1F8] px-4 py-2 text-xs font-bold text-[#1B5E8C] hover:bg-[#1B5E8C] hover:text-white transition-all">
+                      See a doctor
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -1206,6 +1375,49 @@ export default function Home() {
                 width="100%" height="340" style={{ border: 0, display: 'block' }}
                 allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"
               />
+            </div>
+          </div>
+        </section>
+
+        {/* ── FAQ ───────────────────────────────────────────── */}
+        <section className="bg-white py-16 px-5 sm:px-8">
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-10 text-center space-y-3" data-reveal>
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#1B5E8C]">Common Questions</p>
+              <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">Frequently Asked Questions</h2>
+              <p className="text-sm leading-7 text-slate-500">Can't find your answer? <a href="tel:08028611472" className="text-[#1B5E8C] font-semibold hover:underline">Call us</a> or <a href="https://wa.me/2348028611472" className="text-[#1B5E8C] font-semibold hover:underline">WhatsApp us</a> directly.</p>
+            </div>
+            <div className="space-y-3" data-reveal>
+              {faqs.map((faq, i) => (
+                <div key={i} className={`rounded-2xl border transition-all ${openFaq === i ? 'border-[#1B5E8C]/30 bg-[#F0F7FF]' : 'border-slate-100 bg-white'}`}>
+                  <button
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
+                  >
+                    <span className="font-semibold text-slate-900 text-sm leading-6">{faq.q}</span>
+                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-all ${openFaq === i ? 'bg-[#1B5E8C] text-white rotate-45' : 'bg-slate-100 text-slate-500'}`}>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </span>
+                  </button>
+                  <div className={`overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-60' : 'max-h-0'}`}>
+                    <p className="px-6 pb-5 text-sm leading-7 text-slate-600">{faq.a}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 rounded-3xl bg-[#E7F1F8] p-6 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left" data-reveal>
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#1B5E8C]">
+                <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.56-.56a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" /></svg>
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-slate-900">Still have questions?</p>
+                <p className="text-sm text-slate-500 mt-0.5">Our patient services team is available 24 hours a day to help.</p>
+              </div>
+              <a href="tel:08028611472" className="shrink-0 rounded-2xl bg-[#1B5E8C] px-6 py-3.5 text-sm font-bold text-white hover:bg-[#134466] active:scale-95 transition-all">
+                Call Us Now
+              </a>
             </div>
           </div>
         </section>
