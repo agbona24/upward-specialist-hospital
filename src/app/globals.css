@@ -202,3 +202,25 @@ button, input, select { font: inherit; }
 .tab-active span {
   color: #1B5E8C;
 }
+
+/* ── Native active scale ───────────────────────────────────── */
+.active\:scale-98:active { transform: scale(0.98); }
+.active\:scale-90:active { transform: scale(0.90); }
+
+/* ── Accordion transition ──────────────────────────────────── */
+.max-h-0 { max-height: 0; }
+.max-h-96 { max-height: 24rem; }
+
+/* ── Booking step fade ─────────────────────────────────────── */
+.book-step-enter {
+  animation: book-in 0.25s ease-out both;
+}
+@keyframes book-in {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Snap scroll hint on mobile ────────────────────────────── */
+.snap-x { scroll-snap-type: x mandatory; }
+.snap-start { scroll-snap-align: start; }
+
