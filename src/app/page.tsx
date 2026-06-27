@@ -303,14 +303,6 @@ export default function Home() {
 
               <div className="slide-right relative">
                 <div className="glass rounded-3xl p-4 shadow-2xl">
-                  <div className="mb-3 flex items-center justify-between px-2">
-                    <span className="text-xs font-semibold text-[#a8d8f0] uppercase tracking-widest">Live ECG Monitor</span>
-                    <div className="flex gap-1.5">
-                      <div className="h-2.5 w-2.5 rounded-full bg-red-400" />
-                      <div className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
-                      <div className="h-2.5 w-2.5 rounded-full bg-[#10B981]" />
-                    </div>
-                  </div>
                   <div className="aspect-[16/9] w-full"><HeartbeatMonitorSVG /></div>
                 </div>
                 <div className="glass absolute -left-4 top-8 rounded-2xl px-4 py-3 shadow-lg hidden sm:block">
