@@ -225,17 +225,19 @@ button, input, select { font: inherit; }
 .snap-start { scroll-snap-align: start; }
 
 /* ── Scroll reveal ─────────────────────────────────────────── */
-[data-reveal] {
+/* reveal-ready is added by JS only for off-screen elements,
+   so above-the-fold content is never hidden even on slow loads */
+[data-reveal].reveal-ready {
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.65s ease, transform 0.65s ease;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
-[data-reveal].revealed {
+[data-reveal].reveal-ready.revealed {
   opacity: 1;
   transform: translateY(0);
 }
-[data-reveal][data-delay="1"] { transition-delay: 0.1s; }
-[data-reveal][data-delay="2"] { transition-delay: 0.2s; }
+[data-reveal].reveal-ready[data-delay="1"] { transition-delay: 0.12s; }
+[data-reveal].reveal-ready[data-delay="2"] { transition-delay: 0.22s; }
 
 /* ── Testimonial progress bar ──────────────────────────────── */
 @keyframes progress-bar {

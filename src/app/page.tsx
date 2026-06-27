@@ -12,9 +12,22 @@ function useScrollReveal() {
           observer.unobserve(e.target);
         }
       }),
-      { threshold: 0.12 }
+      { threshold: 0.08, rootMargin: '0px 0px -20px 0px' }
     );
-    document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el));
+
+    Array.from(document.querySelectorAll('[data-reveal]')).forEach(el => {
+      const rect = el.getBoundingClientRect();
+      const alreadyVisible = rect.top < window.innerHeight && rect.bottom > 0;
+      if (alreadyVisible) {
+        // In viewport on load — reveal immediately, no animation needed
+        el.classList.add('revealed');
+      } else {
+        // Off-screen — hide it and watch for scroll
+        el.classList.add('reveal-ready');
+        observer.observe(el);
+      }
+    });
+
     return () => observer.disconnect();
   }, []);
 }
