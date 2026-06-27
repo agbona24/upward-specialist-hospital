@@ -66,9 +66,11 @@ function CountUp({ to, suffix = '', duration = 1400 }: { to: number; suffix?: st
 /* ─── ECG monitor SVG ──────────────────────────────────────── */
 function HeartbeatMonitorSVG() {
   return (
-    <svg viewBox="0 0 520 320" className="w-full h-full" aria-hidden>
+    <svg viewBox="0 0 520 320" className="hero-monitor w-full h-full" aria-hidden>
       <rect x="30" y="20" width="460" height="260" rx="24" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
       <rect x="50" y="40" width="420" height="200" rx="12" fill="rgba(0,0,0,0.3)" />
+      <circle cx="426" cy="92" r="48" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="2" className="hero-orbit" />
+      <circle cx="426" cy="92" r="64" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" className="hero-orbit hero-orbit-2" />
       {[80,120,160,200].map(y => (
         <line key={y} x1="60" y1={y} x2="460" y2={y} stroke="rgba(16,185,129,0.15)" strokeWidth="1" />
       ))}
@@ -80,9 +82,16 @@ function HeartbeatMonitorSVG() {
         d="M 60 140 L 100 140 L 115 140 L 125 80 L 140 200 L 155 70 L 170 140 L 200 140 L 215 140 L 225 95 L 240 185 L 255 75 L 270 140 L 300 140 L 315 140 L 325 90 L 340 190 L 355 78 L 370 140 L 460 140"
         stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"
       />
-      <rect x="60" y="48" width="3" height="184" fill="rgba(16,185,129,0.4)" rx="2">
+      <path className="hero-wave" d="M 80 60 C 140 60, 170 96, 230 96 S 315 40, 375 68" stroke="rgba(255,255,255,0.55)" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <rect x="60" y="48" width="3" height="184" fill="rgba(16,185,129,0.4)" rx="2" className="hero-scan">
         <animateTransform attributeName="transform" type="translate" from="0 0" to="397 0" dur="3s" repeatCount="indefinite" />
       </rect>
+      <g className="hero-cross">
+        <rect x="408" y="72" width="20" height="40" rx="4" fill="rgba(255,255,255,0.16)" />
+        <rect x="400" y="80" width="36" height="24" rx="4" fill="rgba(255,255,255,0.22)" />
+        <line x1="418" y1="72" x2="418" y2="112" stroke="rgba(16,185,129,0.85)" strokeWidth="2" strokeLinecap="round" />
+        <line x1="400" y1="92" x2="436" y2="92" stroke="rgba(16,185,129,0.85)" strokeWidth="2" strokeLinecap="round" />
+      </g>
       <circle cx="70" cy="255" r="5" fill="#10B981">
         <animate attributeName="opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite" />
       </circle>
@@ -757,14 +766,66 @@ export default function Home() {
   const [doctorSpec, setDoctorSpec]     = useState('All Specialties');
   const [openFaq, setOpenFaq]           = useState<number | null>(null);
   const [openTip, setOpenTip]           = useState<number | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [canInstall, setCanInstall]     = useState(false);
+  const [isIOS, setIsIOS]               = useState(false);
+  const [isInstalled, setIsInstalled]   = useState(false);
+  const [installTool, setInstallTool]   = useState<{ id: string; name: string; emoji: string } | null>(null);
+  const [installDone, setInstallDone]   = useState(false);
+  const [installStep, setInstallStep]   = useState<'quiz' | 'confirm'>('quiz');
 
   useScrollReveal();
 
   /* Lock body scroll when a modal is open */
   useEffect(() => {
-    document.body.style.overflow = (activeTool || showGuide) ? 'hidden' : '';
+    document.body.style.overflow = (activeTool || showGuide || !!installTool) ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [activeTool, showGuide]);
+  }, [activeTool, showGuide, installTool]);
+
+  /* PWA install prompt capture */
+  useEffect(() => {
+    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream);
+    if (window.matchMedia('(display-mode: standalone)').matches) setIsInstalled(true);
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setCanInstall(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('appinstalled', () => {
+      setIsInstalled(true); setCanInstall(false); setDeferredPrompt(null);
+    });
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  async function triggerInstall() {
+    if (!deferredPrompt || !installTool) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setInstallDone(true);
+      setInstallTool(null);
+      setDeferredPrompt(null);
+      setCanInstall(false);
+      /* Show a local notification if permission already granted */
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(`${installTool.name} installed! ✓`, {
+          body: 'Find it on your home screen for instant access.',
+          icon: '/icon-192.png',
+        });
+      } else if ('Notification' in window && Notification.permission !== 'denied') {
+        Notification.requestPermission().then(p => {
+          if (p === 'granted') {
+            new Notification(`${installTool.name} installed! ✓`, {
+              body: 'Find it on your home screen for instant access.',
+              icon: '/icon-192.png',
+            });
+          }
+        });
+      }
+    }
+  }
 
   function handleGuideResult(dest: string) {
     setShowGuide(false);
@@ -1187,6 +1248,57 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+        {/* ── INSTALL AS APP ────────────────────────────────── */}
+        {!isInstalled && (
+        <section id="install" className="bg-gradient-to-br from-[#0d3f66] via-[#1B5E8C] to-[#2876a8] px-5 py-16 sm:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-10 text-center space-y-3" data-reveal>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white/70">
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 18V6m0 12l-4-4m4 4l4-4" /></svg>
+                Free · No App Store Needed
+              </div>
+              <h2 className="text-3xl font-bold text-white sm:text-4xl">
+                Install a Health App<br />on Your Phone
+              </h2>
+              <p className="mx-auto max-w-lg text-sm leading-7 text-white/70">
+                Choose the health tool you want quick access to. It installs directly on your home screen — one tap, no downloads.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 max-w-4xl mx-auto" data-reveal>
+              {[
+                { id: 'bmi',     name: 'BMI Calculator',       emoji: '⚖️', desc: 'Track your weight & BMI score' },
+                { id: 'vaccine', name: 'Vaccination Reminder',  emoji: '💉', desc: "Never miss your child's vaccine" },
+                { id: 'duedate', name: 'Due Date Calculator',   emoji: '🤱', desc: 'Track your pregnancy timeline' },
+                { id: 'risk',    name: 'Health Risk Check',     emoji: '📊', desc: 'Know your personal risk profile' },
+              ].map(app => (
+                <button
+                  key={app.id}
+                  onClick={() => { setInstallTool(app); setInstallStep('quiz'); }}
+                  className="group flex flex-col items-center gap-4 rounded-3xl border border-white/15 bg-white/10 p-6 text-center backdrop-blur-sm hover:bg-white/20 active:scale-95 transition-all"
+                >
+                  <span className="text-4xl">{app.emoji}</span>
+                  <div>
+                    <p className="font-bold text-white">{app.name}</p>
+                    <p className="mt-1 text-xs text-white/60 leading-5">{app.desc}</p>
+                  </div>
+                  <div className="mt-auto flex items-center gap-2 rounded-full bg-white/20 px-5 py-2.5 text-xs font-bold text-white group-hover:bg-white group-hover:text-[#1B5E8C] transition-all">
+                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M12 18V6m0 12l-4-4m4 4l4-4" /><line x1="5" y1="21" x2="19" y2="21" />
+                    </svg>
+                    Install
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <p className="mt-8 text-center text-xs text-white/40">
+              Works on Android Chrome &amp; iOS Safari · Your data stays on your device
+            </p>
+          </div>
+        </section>
+        )}
 
         {/* ── HEALTH TIPS ───────────────────────────────────── */}
         <section className="bg-white py-16 px-5 sm:px-8">
@@ -1704,6 +1816,124 @@ export default function Home() {
             {/* Quiz */}
             <SmartGuide onResult={handleGuideResult} />
           </div>
+        </div>
+      )}
+
+      {/* ── INSTALL MODAL ─────────────────────────────────────── */}
+      {installTool && (
+        <div
+          className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4"
+          onClick={e => { if (e.target === e.currentTarget) setInstallTool(null); }}
+        >
+          <div className="w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
+
+            {installStep === 'quiz' ? (
+              <>
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+                  <p className="font-bold text-slate-900">Which app do you need?</p>
+                  <button onClick={() => setInstallTool(null)} className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 transition-all">
+                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                  </button>
+                </div>
+                <div className="p-5 space-y-2.5">
+                  {[
+                    { id: 'bmi',     name: 'BMI Calculator',       emoji: '⚖️', desc: 'Calculate & track body mass index' },
+                    { id: 'vaccine', name: 'Vaccination Reminder',  emoji: '💉', desc: "See your child's immunisation schedule" },
+                    { id: 'duedate', name: 'Due Date Calculator',   emoji: '🤱', desc: 'Estimate your pregnancy due date' },
+                    { id: 'risk',    name: 'Health Risk Check',     emoji: '📊', desc: 'Assess your cardiovascular & diabetes risk' },
+                  ].map(app => (
+                    <button
+                      key={app.id}
+                      onClick={() => { setInstallTool(app); setInstallStep('confirm'); }}
+                      className={`group w-full flex items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all active:scale-[0.98] ${installTool.id === app.id ? 'border-[#1B5E8C] bg-[#E7F1F8]' : 'border-slate-100 bg-white hover:border-[#1B5E8C] hover:bg-[#E7F1F8]'}`}
+                    >
+                      <span className="text-2xl">{app.emoji}</span>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-slate-900">{app.name}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{app.desc}</p>
+                      </div>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4 text-slate-300 group-hover:text-[#1B5E8C] transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9,18 15,12 9,6" /></svg>
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Confirm screen */}
+                <div className="p-6 space-y-5">
+                  <div className="text-center space-y-3 rounded-2xl bg-[#E7F1F8] p-6">
+                    <span className="text-5xl block">{installTool.emoji}</span>
+                    <h3 className="text-lg font-bold text-slate-900">Install {installTool.name}</h3>
+                    <p className="text-sm text-slate-500 leading-6">
+                      Add it to your home screen for instant access — no App Store, no download, completely free.
+                    </p>
+                  </div>
+
+                  {isInstalled ? (
+                    <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-4 text-sm text-emerald-700 text-center font-semibold">
+                      ✓ App already installed on this device
+                    </div>
+                  ) : isIOS ? (
+                    <div className="rounded-2xl bg-slate-50 border border-slate-100 p-5 space-y-3">
+                      <p className="text-sm font-bold text-slate-800">How to install on iPhone / iPad:</p>
+                      <ol className="space-y-2.5 text-sm text-slate-600">
+                        {[
+                          'Tap the Share button ⎙ at the bottom of Safari',
+                          'Scroll down and tap "Add to Home Screen"',
+                          'Tap "Add" in the top right corner',
+                        ].map((step, i) => (
+                          <li key={i} className="flex items-start gap-3">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#1B5E8C] text-white text-[10px] font-bold mt-0.5">{i + 1}</span>
+                            {step}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  ) : canInstall ? (
+                    <button
+                      onClick={triggerInstall}
+                      className="w-full flex items-center justify-center gap-3 rounded-2xl bg-[#1B5E8C] py-4 text-sm font-bold text-white hover:bg-[#134466] active:scale-95 transition-all"
+                    >
+                      <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <path d="M12 18V6m0 12l-4-4m4 4l4-4" /><line x1="5" y1="21" x2="19" y2="21" />
+                      </svg>
+                      Install Now — It's Free
+                    </button>
+                  ) : (
+                    <div className="rounded-2xl bg-amber-50 border border-amber-100 p-4 text-sm text-amber-700 leading-6">
+                      Open this page in <strong>Chrome on Android</strong> for the best install experience. On iPhone, use Safari and tap the Share button.
+                    </div>
+                  )}
+
+                  <div className="flex gap-3">
+                    <button onClick={() => setInstallStep('quiz')} className="flex-1 rounded-2xl border-2 border-slate-100 py-3.5 text-sm font-semibold text-slate-500 active:scale-95 transition-all">
+                      ← Change app
+                    </button>
+                    <button onClick={() => setInstallTool(null)} className="flex-1 rounded-2xl border-2 border-slate-100 py-3.5 text-sm font-semibold text-slate-500 active:scale-95 transition-all">
+                      Maybe later
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── INSTALL SUCCESS TOAST ──────────────────────────────── */}
+      {installDone && (
+        <div className="fixed bottom-24 md:bottom-6 left-4 right-4 z-[400] flex items-center gap-4 rounded-2xl bg-[#10B981] p-4 shadow-2xl">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20">
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><polyline points="20,6 9,17 4,12" /></svg>
+          </div>
+          <div className="flex-1">
+            <p className="font-bold text-white text-sm">App installed!</p>
+            <p className="text-xs text-white/80 mt-0.5">Find it on your home screen for instant access.</p>
+          </div>
+          <button onClick={() => setInstallDone(false)} className="text-white/60 hover:text-white transition-colors px-1">
+            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          </button>
         </div>
       )}
 
