@@ -205,10 +205,9 @@ const bottomNavItems = [
       <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9,22 9,12 15,12 15,22" />
     </svg>
   )},
-  { label: 'Services', href: '#services', id: 'Services', icon: (
+  { label: 'Tools', href: '#tools', id: 'Tools', icon: (
     <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <rect x="8" y="2" width="8" height="4" rx="1" /><rect x="2" y="6" width="20" height="16" rx="2" />
-      <line x1="12" y1="10" x2="12" y2="18" /><line x1="8" y1="14" x2="16" y2="14" />
+      <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
     </svg>
   )},
   { label: 'Book', href: '#book', id: 'Book', icon: (
@@ -822,10 +821,15 @@ export default function Home() {
             </div>
           </div>
 
-          <nav className="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
-            {['#home','#about','#services','#doctors','#book','#contact'].map((href, i) => (
-              <a key={href} href={href} className="hover:text-[#1B5E8C] transition-colors">
-                {['Home','About','Services','Doctors','Book','Contact'][i]}
+          <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
+            {['#home','#services','#tools','#doctors','#book','#contact'].map((href, i) => (
+              <a key={href} href={href} className={`hover:text-[#1B5E8C] transition-colors ${href === '#tools' ? 'flex items-center gap-1 text-[#1B5E8C] font-semibold' : ''}`}>
+                {href === '#tools' && (
+                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
+                  </svg>
+                )}
+                {['Home','Services','Health Tools','Doctors','Book','Contact'][i]}
               </a>
             ))}
           </nav>
@@ -851,7 +855,7 @@ export default function Home() {
 
         {menuOpen && (
           <div className="md:hidden border-t border-slate-100 bg-white px-5 py-4 space-y-1">
-            {[['#home','Home'],['#services','Services'],['#doctors','Doctors'],['#book','Book Appointment'],['#contact','Contact']].map(([href, label]) => (
+            {[['#home','Home'],['#services','Services'],['#tools','Health Tools ✦'],['#doctors','Doctors'],['#book','Book Appointment'],['#contact','Contact']].map(([href, label]) => (
               <a key={href} href={href} onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-3 rounded-2xl px-4 py-4 text-sm font-semibold text-slate-700 hover:bg-[#E7F1F8] hover:text-[#1B5E8C] active:scale-95 transition-all">
                 {label}
