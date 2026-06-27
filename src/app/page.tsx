@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /* ─── Scroll-reveal hook ───────────────────────────────────── */
 function useScrollReveal() {
@@ -216,6 +216,368 @@ const bottomNavItems = [
   )},
 ];
 
+/* ─── Tool: BMI Calculator ─────────────────────────────────── */
+function BMITool({ onBook }: { onBook: () => void }) {
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [result, setResult] = useState<{ bmi: number; category: string; color: string; advice: string } | null>(null);
+
+  function calculate() {
+    const h = parseFloat(height), w = parseFloat(weight);
+    if (!h || !w || h <= 0 || w <= 0) return;
+    const bmi = Math.round((w / Math.pow(h / 100, 2)) * 10) / 10;
+    let category: string, color: string, advice: string;
+    if (bmi < 18.5)       { category = 'Underweight'; color = '#3B82F6'; advice = 'You may benefit from a personalised nutrition plan. Speak with our General Medicine team.'; }
+    else if (bmi < 25)    { category = 'Normal Weight'; color = '#10B981'; advice = 'Great job! Maintain your healthy weight with regular exercise and a balanced diet.'; }
+    else if (bmi < 30)    { category = 'Overweight'; color = '#F59E0B'; advice = 'Consider lifestyle changes. Our doctors can help you build a personalised wellness plan.'; }
+    else                  { category = 'Obese'; color = '#EF4444'; advice = 'We recommend a specialist consultation. Book an appointment with our team today.'; }
+    setResult({ bmi, category, color, advice });
+  }
+
+  const gaugePercent = result ? Math.min(100, Math.max(0, ((result.bmi - 10) / 30) * 100)) : 0;
+  const inp = "w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-base outline-none focus:border-[#1B5E8C] focus:ring-2 focus:ring-[#1B5E8C]/20 transition-all";
+
+  return (
+    <div className="p-6 space-y-5">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-bold text-slate-700 mb-2">Height (cm)</label>
+          <input type="number" placeholder="e.g. 170" value={height} min="50" max="250"
+            onChange={e => { setHeight(e.target.value); setResult(null); }} className={inp} />
+        </div>
+        <div>
+          <label className="block text-sm font-bold text-slate-700 mb-2">Weight (kg)</label>
+          <input type="number" placeholder="e.g. 70" value={weight} min="10" max="300"
+            onChange={e => { setWeight(e.target.value); setResult(null); }} className={inp} />
+        </div>
+      </div>
+      <button onClick={calculate} disabled={!height || !weight}
+        className="w-full rounded-2xl bg-[#1B5E8C] py-4 text-sm font-bold text-white hover:bg-[#134466] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+        Calculate BMI
+      </button>
+      {result && (
+        <div className="rounded-2xl bg-slate-50 border border-slate-100 p-5 space-y-4">
+          <div className="text-center">
+            <p className="text-5xl font-black" style={{ color: result.color }}>{result.bmi}</p>
+            <p className="text-base font-bold mt-1" style={{ color: result.color }}>{result.category}</p>
+          </div>
+          <div className="space-y-2">
+            <div className="relative h-4 rounded-full overflow-hidden" style={{ background: 'linear-gradient(to right, #60a5fa 0%, #34d399 30%, #fbbf24 60%, #f87171 100%)' }}>
+              <div className="absolute top-0 bottom-0 w-1 bg-white rounded-full shadow-md" style={{ left: `calc(${gaugePercent}% - 2px)` }} />
+            </div>
+            <div className="flex justify-between text-[10px] text-slate-400 font-semibold px-1">
+              <span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span>
+            </div>
+          </div>
+          <p className="text-sm text-slate-600 leading-6 bg-white rounded-xl p-4 border border-slate-100">{result.advice}</p>
+          <button onClick={onBook} className="w-full flex items-center justify-center gap-2 rounded-2xl bg-[#1B5E8C] py-3.5 text-sm font-bold text-white hover:bg-[#134466] active:scale-95 transition-all">
+            Book a Consultation
+          </button>
+        </div>
+      )}
+      <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 text-xs text-amber-700 leading-5">
+        BMI is a screening tool, not a medical diagnosis. Please consult a healthcare professional for personalised advice.
+      </div>
+    </div>
+  );
+}
+
+/* ─── Tool: Due Date Calculator ────────────────────────────── */
+function DueDateTool({ onBook }: { onBook: () => void }) {
+  const [lmp, setLmp] = useState('');
+
+  const info = lmp ? (() => {
+    const lmpDate  = new Date(lmp);
+    const due      = new Date(lmpDate.getTime() + 280 * 864e5);
+    const today    = new Date();
+    const days     = Math.floor((today.getTime() - lmpDate.getTime()) / 864e5);
+    const weeks    = Math.max(0, Math.min(42, Math.floor(days / 7)));
+    const trim     = weeks < 13 ? 1 : weeks < 27 ? 2 : 3;
+    return { due, weeks, days, trim };
+  })() : null;
+
+  const milestones = [
+    { week: 8,  label: 'First scan / ultrasound' },
+    { week: 12, label: 'End of 1st trimester' },
+    { week: 20, label: 'Anomaly scan' },
+    { week: 28, label: 'Start of 3rd trimester' },
+    { week: 37, label: 'Full term' },
+    { week: 40, label: 'Due date' },
+  ];
+
+  return (
+    <div className="p-6 space-y-5">
+      <div>
+        <label className="block text-sm font-bold text-slate-700 mb-2">First Day of Last Menstrual Period (LMP)</label>
+        <input type="date" value={lmp} max={new Date().toISOString().split('T')[0]}
+          onChange={e => setLmp(e.target.value)}
+          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-base outline-none focus:border-[#1B5E8C] focus:ring-2 focus:ring-[#1B5E8C]/20 transition-all" />
+      </div>
+
+      {info && (
+        <div className="space-y-4">
+          <div className="rounded-2xl bg-[#E7F1F8] p-5 text-center space-y-2">
+            <p className="text-xs font-bold uppercase tracking-widest text-[#1B5E8C]">Estimated Due Date</p>
+            <p className="text-3xl font-black text-[#1B5E8C]">
+              {info.due.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
+            <p className="text-base font-semibold text-slate-600">
+              {info.weeks} weeks + {info.days % 7} days pregnant
+            </p>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-bold text-[#1B5E8C]">
+              Trimester {info.trim} of 3
+            </span>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs text-slate-400 font-medium">
+              <span>Week 0</span><span>Week 20</span><span>Week 40</span>
+            </div>
+            <div className="h-3 rounded-full bg-slate-100 overflow-hidden">
+              <div className="h-full rounded-full bg-gradient-to-r from-[#1B5E8C] to-[#10B981] transition-all duration-700"
+                style={{ width: `${Math.min(100, (info.weeks / 40) * 100)}%` }} />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Key Milestones</p>
+            {milestones.map(m => {
+              const lmpDate = new Date(lmp);
+              const mDate = new Date(lmpDate.getTime() + m.week * 7 * 864e5);
+              const passed = info.weeks >= m.week;
+              return (
+                <div key={m.week} className={`flex items-center justify-between rounded-2xl px-4 py-3 ${passed ? 'bg-[#E7F1F8]' : 'bg-slate-50'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${passed ? 'bg-[#1B5E8C] text-white' : 'bg-slate-200 text-slate-500'}`}>
+                      {passed ? '✓' : m.week}
+                    </div>
+                    <span className={`text-sm ${passed ? 'font-semibold text-slate-700' : 'text-slate-500'}`}>{m.label}</span>
+                  </div>
+                  <span className="text-xs text-slate-400">{mDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <button onClick={onBook} className="w-full flex items-center justify-center gap-2 rounded-2xl bg-[#1B5E8C] py-3.5 text-sm font-bold text-white hover:bg-[#134466] active:scale-95 transition-all">
+            Book Antenatal Appointment
+          </button>
+        </div>
+      )}
+
+      <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 text-xs text-amber-700 leading-5">
+        Estimate based on a 28-day cycle. Always confirm with your doctor for an accurate clinical assessment.
+      </div>
+    </div>
+  );
+}
+
+/* ─── Tool: Vaccination Reminder ───────────────────────────── */
+function VaccineTool({ onBook }: { onBook: () => void }) {
+  const [dob, setDob] = useState('');
+
+  const schedule = [
+    { age: 'At Birth',   weeks: 0,  vaccines: ['BCG', 'OPV-0', 'Hepatitis B (1st dose)'] },
+    { age: '6 Weeks',    weeks: 6,  vaccines: ['OPV-1', 'Pentavalent-1 (DTP+HBV+Hib)', 'PCV-1', 'Rotavirus-1'] },
+    { age: '10 Weeks',   weeks: 10, vaccines: ['OPV-2', 'Pentavalent-2', 'PCV-2', 'Rotavirus-2'] },
+    { age: '14 Weeks',   weeks: 14, vaccines: ['OPV-3', 'Pentavalent-3', 'PCV-3', 'IPV'] },
+    { age: '9 Months',   weeks: 39, vaccines: ['Measles-1', 'Yellow Fever', 'Meningococcal A'] },
+    { age: '15 Months',  weeks: 65, vaccines: ['Measles-2 / MMR'] },
+  ];
+
+  function vaccDate(dobDate: Date, weeks: number) {
+    return new Date(dobDate.getTime() + weeks * 7 * 864e5);
+  }
+  function status(weeks: number): 'past' | 'due' | 'upcoming' {
+    if (!dob) return 'upcoming';
+    const diff = Math.floor((vaccDate(new Date(dob), weeks).getTime() - Date.now()) / 864e5);
+    if (diff < -14) return 'past';
+    if (diff <= 30)  return 'due';
+    return 'upcoming';
+  }
+
+  return (
+    <div className="p-6 space-y-5">
+      <div>
+        <label className="block text-sm font-bold text-slate-700 mb-2">Child's Date of Birth</label>
+        <input type="date" value={dob} max={new Date().toISOString().split('T')[0]}
+          onChange={e => setDob(e.target.value)}
+          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-base outline-none focus:border-[#1B5E8C] focus:ring-2 focus:ring-[#1B5E8C]/20 transition-all" />
+      </div>
+
+      {dob && (
+        <div className="space-y-3">
+          <div className="flex gap-4 text-xs font-semibold text-slate-500 mb-1">
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-slate-300 inline-block" />Done</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-400 inline-block" />Due soon</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#1B5E8C] inline-block" />Upcoming</span>
+          </div>
+
+          {schedule.map(s => {
+            const dobDate = new Date(dob);
+            const vDate   = vaccDate(dobDate, s.weeks);
+            const st      = status(s.weeks);
+            const rowCls  = st === 'past' ? 'bg-slate-50 border-slate-100' : st === 'due' ? 'bg-amber-50 border-amber-200' : 'bg-[#E7F1F8] border-[#1B5E8C]/20';
+            const dotCls  = st === 'past' ? 'bg-slate-300' : st === 'due' ? 'bg-amber-400' : 'bg-[#1B5E8C]';
+            const tagCls  = st === 'past' ? 'bg-slate-200 text-slate-500' : st === 'due' ? 'bg-amber-100 text-amber-800' : 'bg-[#1B5E8C]/10 text-[#1B5E8C]';
+            return (
+              <div key={s.age} className={`rounded-2xl border p-4 ${rowCls}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dotCls}`} />
+                    <span className="text-sm font-bold text-slate-900">{s.age}</span>
+                  </div>
+                  <span className="text-xs text-slate-500">{vDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 ml-5">
+                  {s.vaccines.map(v => (
+                    <span key={v} className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${tagCls}`}>{v}</span>
+                  ))}
+                </div>
+                {st === 'due' && (
+                  <p className="ml-5 mt-2 text-xs font-bold text-amber-700">⚡ Due within 30 days — schedule now!</p>
+                )}
+              </div>
+            );
+          })}
+
+          <button onClick={onBook} className="w-full flex items-center justify-center gap-2 rounded-2xl bg-[#1B5E8C] py-3.5 text-sm font-bold text-white hover:bg-[#134466] active:scale-95 transition-all">
+            Book Paediatrics Appointment
+          </button>
+        </div>
+      )}
+
+      <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 text-xs text-amber-700 leading-5">
+        Based on Nigeria's National Immunization Programme (NIP) schedule. Consult your paediatrician for personalised advice.
+      </div>
+    </div>
+  );
+}
+
+/* ─── Tool: Health Risk Check ──────────────────────────────── */
+function RiskTool({ onBook }: { onBook: () => void }) {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [result, setResult] = useState<{ heart: string; diabetes: string; hypertension: string } | null>(null);
+
+  const questions = [
+    { key: 'age',       label: 'What is your age group?',                          opts: ['Under 30', '30–45', '46–60', 'Over 60'] },
+    { key: 'smoke',     label: 'Do you smoke or use tobacco?',                     opts: ['No', 'Former smoker', 'Occasionally', 'Yes, regularly'] },
+    { key: 'exercise',  label: 'How often do you exercise?',                       opts: ['5+ times a week', '2–3 times a week', 'Rarely', 'Never'] },
+    { key: 'diet',      label: 'How would you describe your diet?',                opts: ['Very healthy', 'Mostly healthy', 'Average', 'Mostly unhealthy'] },
+    { key: 'family',    label: 'Family history of heart disease or diabetes?',     opts: ['None', 'Distant relatives', 'Parent or sibling', 'Multiple relatives'] },
+    { key: 'existing',  label: 'Any existing diagnosed conditions?',               opts: ['None', 'Diabetes', 'Hypertension', 'Both'] },
+  ];
+
+  function calcScore(ans: Record<string, string>) {
+    const ageW  = { 'Under 30': 0, '30–45': 1, '46–60': 2, 'Over 60': 3 };
+    const smoW  = { 'No': 0, 'Former smoker': 1, 'Occasionally': 2, 'Yes, regularly': 3 };
+    const exW   = { '5+ times a week': 0, '2–3 times a week': 0, 'Rarely': 2, 'Never': 3 };
+    const dietW = { 'Very healthy': 0, 'Mostly healthy': 0, 'Average': 1, 'Mostly unhealthy': 2 };
+    const famW  = { 'None': 0, 'Distant relatives': 1, 'Parent or sibling': 2, 'Multiple relatives': 3 };
+
+    const a = (ageW as any)[ans.age] ?? 0;
+    const s = (smoW as any)[ans.smoke] ?? 0;
+    const e = (exW as any)[ans.exercise] ?? 0;
+    const d = (dietW as any)[ans.diet] ?? 0;
+    const f = (famW as any)[ans.family] ?? 0;
+
+    let heartScore = a + s * 1.5 + e + d + f;
+    let diabScore  = a + e + d * 1.5 + f;
+    let bpScore    = a + s * 0.5 + e + d;
+
+    if (ans.existing === 'Diabetes')    { diabScore += 3; }
+    if (ans.existing === 'Hypertension'){ bpScore   += 3; heartScore += 1; }
+    if (ans.existing === 'Both')        { diabScore += 3; bpScore += 3; heartScore += 2; }
+
+    const level = (n: number) => n <= 2 ? 'Low' : n <= 5 ? 'Moderate' : 'High';
+    return { heart: level(heartScore), diabetes: level(diabScore), hypertension: level(bpScore) };
+  }
+
+  function choose(opt: string) {
+    const q = questions[step];
+    const next = { ...answers, [q.key]: opt };
+    setAnswers(next);
+    if (step < questions.length - 1) {
+      setStep(s => s + 1);
+    } else {
+      setResult(calcScore(next));
+    }
+  }
+
+  function reset() { setStep(0); setAnswers({}); setResult(null); }
+
+  const riskColor = (v: string) => v === 'Low' ? '#10B981' : v === 'Moderate' ? '#F59E0B' : '#EF4444';
+  const riskBg    = (v: string) => v === 'Low' ? 'bg-emerald-50 border-emerald-200' : v === 'Moderate' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200';
+
+  if (result) {
+    const anyHigh = Object.values(result).includes('High');
+    const anyMod  = Object.values(result).includes('Moderate');
+    return (
+      <div className="p-6 space-y-5">
+        <div className="text-center space-y-1">
+          <p className="text-lg font-bold text-slate-900">Your Health Risk Summary</p>
+          <p className="text-sm text-slate-500">A screening guide — not a clinical diagnosis.</p>
+        </div>
+        {[
+          { label: 'Cardiovascular Risk', value: result.heart,        icon: '❤️' },
+          { label: 'Diabetes Risk',       value: result.diabetes,     icon: '🩸' },
+          { label: 'Hypertension Risk',   value: result.hypertension, icon: '💉' },
+        ].map(r => (
+          <div key={r.label} className={`flex items-center justify-between rounded-2xl border p-5 ${riskBg(r.value)}`}>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{r.icon}</span>
+              <span className="font-bold text-slate-800 text-sm">{r.label}</span>
+            </div>
+            <span className="text-lg font-black" style={{ color: riskColor(r.value) }}>{r.value}</span>
+          </div>
+        ))}
+        <div className="rounded-2xl bg-[#E7F1F8] p-4 text-sm text-[#1B5E8C] leading-6">
+          {anyHigh
+            ? 'Some risk scores are elevated. We strongly recommend booking a comprehensive check-up with one of our specialists.'
+            : anyMod
+            ? 'Some moderate risk factors detected. A routine check-up and lifestyle adjustments are advised.'
+            : 'Your risk factors appear low — great! Keep up healthy habits and schedule annual check-ups.'}
+        </div>
+        <div className="flex gap-3">
+          <button onClick={reset} className="flex-1 rounded-2xl border-2 border-slate-200 py-3.5 text-sm font-semibold text-slate-600 active:scale-95 transition-all">Retake</button>
+          <button onClick={onBook} className="flex-[2] rounded-2xl bg-[#1B5E8C] py-3.5 text-sm font-bold text-white hover:bg-[#134466] active:scale-95 transition-all">Book a Check-Up</button>
+        </div>
+      </div>
+    );
+  }
+
+  const q = questions[step];
+  return (
+    <div className="p-6 space-y-5">
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs text-slate-400 font-medium">
+          <span>Question {step + 1} of {questions.length}</span>
+          <span>{Math.round((step / questions.length) * 100)}% complete</span>
+        </div>
+        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div className="h-full bg-[#1B5E8C] rounded-full transition-all duration-500"
+            style={{ width: `${(step / questions.length) * 100}%` }} />
+        </div>
+      </div>
+      <p className="text-base font-bold text-slate-900">{q.label}</p>
+      <div className="space-y-2.5">
+        {q.opts.map(opt => (
+          <button key={opt} onClick={() => choose(opt)}
+            className="w-full rounded-2xl border-2 border-slate-200 bg-white px-5 py-4 text-left text-sm font-semibold text-slate-700 hover:border-[#1B5E8C] hover:bg-[#E7F1F8] hover:text-[#1B5E8C] active:scale-[0.98] transition-all">
+            {opt}
+          </button>
+        ))}
+      </div>
+      {step > 0 && (
+        <button onClick={() => setStep(s => s - 1)} className="text-sm text-slate-400 hover:text-slate-600 transition-colors">
+          ← Go back
+        </button>
+      )}
+    </div>
+  );
+}
+
 /* ─── Page ─────────────────────────────────────────────────── */
 export default function Home() {
   const [menuOpen, setMenuOpen]         = useState(false);
@@ -228,8 +590,15 @@ export default function Home() {
   const [bookStep, setBookStep]         = useState(1);
   const [bookDone, setBookDone]         = useState(false);
   const [bookData, setBookData]         = useState({ service: '', doctor: '', date: '', name: '', phone: '' });
+  const [activeTool, setActiveTool]     = useState<string | null>(null);
 
   useScrollReveal();
+
+  /* Lock body scroll when a tool modal is open */
+  useEffect(() => {
+    document.body.style.overflow = activeTool ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [activeTool]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -524,16 +893,16 @@ export default function Home() {
           </div>
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
             {[
-              { title: 'BMI Calculator', desc: 'Calculate your Body Mass Index', icon: (
+              { id: 'bmi',     title: 'BMI Calculator',       desc: 'Calculate your Body Mass Index', icon: (
                 <svg viewBox="0 0 32 32" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="16" cy="16" r="12" /><line x1="16" y1="8" x2="16" y2="16" /><line x1="16" y1="16" x2="20" y2="20" /></svg>
               )},
-              { title: 'Due Date Calculator', desc: 'Plan your pregnancy timeline', icon: (
+              { id: 'duedate', title: 'Due Date Calculator',  desc: 'Plan your pregnancy timeline', icon: (
                 <svg viewBox="0 0 32 32" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="4" y="6" width="24" height="22" rx="3" /><line x1="4" y1="13" x2="28" y2="13" /><line x1="10" y1="3" x2="10" y2="9" /><line x1="22" y1="3" x2="22" y2="9" /></svg>
               )},
-              { title: 'Vaccination Reminder', desc: 'Stay on your immunisation schedule', icon: (
+              { id: 'vaccine', title: 'Vaccination Reminder', desc: 'Stay on your immunisation schedule', icon: (
                 <svg viewBox="0 0 32 32" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M 20 6 L 26 12 L 14 24 L 8 26 L 10 20 Z" /><line x1="17" y1="9" x2="23" y2="15" /></svg>
               )},
-              { title: 'Health Risk Check', desc: 'Assess common health risks', icon: (
+              { id: 'risk',    title: 'Health Risk Check',    desc: 'Assess common health risks', icon: (
                 <svg viewBox="0 0 32 32" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M 16 4 L 28 10 L 28 20 Q 28 28 16 30 Q 4 28 4 20 L 4 10 Z" /><line x1="16" y1="13" x2="16" y2="17" /><circle cx="16" cy="21" r="1" fill="currentColor" /></svg>
               )},
             ].map((t, i) => (
@@ -544,8 +913,9 @@ export default function Home() {
                 </div>
                 <h3 className="font-bold text-slate-900">{t.title}</h3>
                 <p className="mt-1 text-xs leading-5 text-slate-500">{t.desc}</p>
-                <button className="mt-5 w-full rounded-2xl border-2 border-[#1B5E8C] py-3 text-sm font-bold text-[#1B5E8C] hover:bg-[#1B5E8C] hover:text-white active:scale-95 transition-all">
-                  Use Tool
+                <button onClick={() => setActiveTool(t.id)}
+                  className="mt-5 w-full rounded-2xl border-2 border-[#1B5E8C] py-3 text-sm font-bold text-[#1B5E8C] hover:bg-[#1B5E8C] hover:text-white active:scale-95 transition-all">
+                  Open Tool
                 </button>
               </div>
             ))}
@@ -927,6 +1297,37 @@ export default function Home() {
           </div>
         </footer>
       </main>
+
+      {/* ── HEALTH TOOL MODALS ────────────────────────────────── */}
+      {activeTool && (
+        <div
+          className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
+          onClick={e => { if (e.target === e.currentTarget) setActiveTool(null); }}
+        >
+          <div className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] overflow-y-auto">
+            {/* Modal header */}
+            <div className="sticky top-0 flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-white rounded-t-3xl">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-[#1B5E8C] mb-0.5">Free Health Tool</p>
+                <h3 className="text-base font-bold text-slate-900">
+                  {{ bmi: 'BMI Calculator', duedate: 'Due Date Calculator', vaccine: 'Vaccination Reminder', risk: 'Health Risk Check' }[activeTool]}
+                </h3>
+              </div>
+              <button onClick={() => setActiveTool(null)}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 transition-all">
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            {/* Tool content */}
+            {activeTool === 'bmi'     && <BMITool     onBook={() => { setActiveTool(null); document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' }); }} />}
+            {activeTool === 'duedate' && <DueDateTool onBook={() => { setActiveTool(null); document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' }); }} />}
+            {activeTool === 'vaccine' && <VaccineTool onBook={() => { setActiveTool(null); document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' }); }} />}
+            {activeTool === 'risk'    && <RiskTool    onBook={() => { setActiveTool(null); document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' }); }} />}
+          </div>
+        </div>
+      )}
 
       {/* ── FLOATING WHATSAPP BUTTON ───────────────────────────── */}
       <a
