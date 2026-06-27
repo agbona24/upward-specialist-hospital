@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Upward Specialist Hospital",
-  description: "Responsive homepage concept for Upward Specialist Hospital in Idimu, Lagos.",
+  title: "Upward Specialist Hospital | Quality Care, Close to Home — Idimu, Lagos",
+  description: "Get expert specialist care without travelling far. Upward Specialist Hospital in Idimu, Lagos offers 24/7 emergency services, maternity, surgery, paediatrics and more — with doctors you can trust and a team that treats you like family.",
 };
 
 export default function RootLayout({
