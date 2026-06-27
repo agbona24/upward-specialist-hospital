@@ -617,6 +617,129 @@ const faqs = [
     a: 'Standard consultations run 20–40 minutes. If tests or procedures are requested, allow extra time. We space appointments carefully to minimise waiting.' },
 ];
 
+/* ─── Smart Guide quiz data ─────────────────────────────────── */
+type QuizOption = { label: string; emoji: string; next: string };
+type QuizNode   = { question: string; sub?: string; options: QuizOption[] };
+
+const quizNodes: Record<string, QuizNode> = {
+  start: {
+    question: 'What brings you here today?',
+    sub: 'Tap the option that best describes you.',
+    options: [
+      { label: 'Book an appointment',         emoji: '📅', next: 'result:book' },
+      { label: 'I want a health check',       emoji: '🩺', next: 'health' },
+      { label: 'Pregnancy or child care',     emoji: '👶', next: 'family' },
+      { label: 'Find a specific doctor',      emoji: '🔍', next: 'result:doctors' },
+      { label: "It's urgent — emergency",     emoji: '🚨', next: 'result:emergency' },
+    ],
+  },
+  health: {
+    question: 'What kind of health check?',
+    options: [
+      { label: 'Calculate my BMI',            emoji: '⚖️', next: 'result:tool_bmi' },
+      { label: 'Assess my health risks',      emoji: '📊', next: 'result:tool_risk' },
+      { label: 'I have a general question',   emoji: '💬', next: 'result:whatsapp' },
+    ],
+  },
+  family: {
+    question: 'What do you need help with?',
+    options: [
+      { label: "Child's vaccination schedule", emoji: '💉', next: 'result:tool_vaccine' },
+      { label: 'Pregnancy / due date',         emoji: '🤱', next: 'result:tool_duedate' },
+      { label: 'Book maternity or paediatrics',emoji: '📅', next: 'result:book' },
+    ],
+  },
+};
+
+const quizDests: Record<string, { title: string; desc: string; cta: string; color: string; emoji: string }> = {
+  book:         { title: 'Book an Appointment',    desc: 'Schedule your visit with one of our specialists in 3 easy steps.',   cta: 'Book Now',             color: '#1B5E8C', emoji: '📅' },
+  doctors:      { title: 'Browse Our Doctors',     desc: 'View our full specialist team and find the right doctor for you.',   cta: 'Meet Our Doctors',     color: '#2876a8', emoji: '👨‍⚕️' },
+  emergency:    { title: 'Emergency — Call Now',   desc: "Don't wait. Our emergency team is on standby 24 hours a day.",       cta: 'Call 0802 861 1472',   color: '#DC2626', emoji: '🚨' },
+  whatsapp:     { title: 'Chat on WhatsApp',       desc: 'Send us a message and our patient team will reply quickly.',         cta: 'Open WhatsApp',        color: '#25D366', emoji: '💬' },
+  tool_bmi:     { title: 'BMI Calculator',         desc: 'Enter your height and weight to get your BMI score instantly.',      cta: 'Open BMI Calculator',  color: '#1B5E8C', emoji: '⚖️' },
+  tool_risk:    { title: 'Health Risk Check',      desc: 'Answer 6 quick questions to see your cardiovascular & diabetes risk.',cta: 'Start Risk Check',    color: '#1B5E8C', emoji: '📊' },
+  tool_vaccine: { title: 'Vaccination Reminder',   desc: "Enter your child's birth date to see their full vaccine schedule.",  cta: 'Open Vaccine Planner', color: '#1B5E8C', emoji: '💉' },
+  tool_duedate: { title: 'Due Date Calculator',    desc: 'Enter your last period date to find your estimated due date.',       cta: 'Open Due Date Tool',   color: '#1B5E8C', emoji: '🤱' },
+};
+
+/* ─── Smart Guide quiz component ────────────────────────────── */
+function SmartGuide({ onResult }: { onResult: (dest: string) => void }) {
+  const [path, setPath] = useState<string[]>(['start']);
+  const current = path[path.length - 1];
+  const isResult = current.startsWith('result:');
+  const destKey  = isResult ? current.replace('result:', '') : null;
+  const dest     = destKey ? quizDests[destKey] : null;
+  const node     = !isResult ? quizNodes[current] : null;
+
+  function choose(next: string) { setPath(p => [...p, next]); }
+  function back()                { setPath(p => p.slice(0, -1)); }
+
+  /* ── Result screen ── */
+  if (dest && destKey) {
+    return (
+      <div className="p-6 space-y-5">
+        <div className="rounded-2xl p-7 text-center space-y-3 border border-slate-100 bg-slate-50">
+          <span className="text-5xl block">{dest.emoji}</span>
+          <h3 className="text-xl font-bold text-slate-900">{dest.title}</h3>
+          <p className="text-sm leading-7 text-slate-500">{dest.desc}</p>
+        </div>
+        <button
+          onClick={() => onResult(destKey)}
+          className="w-full rounded-2xl py-4 text-sm font-bold text-white flex items-center justify-center gap-2 active:scale-95 transition-all"
+          style={{ background: dest.color }}>
+          {dest.cta}
+          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12,5 19,12 12,19" /></svg>
+        </button>
+        <button onClick={back} className="w-full text-sm text-slate-400 hover:text-slate-600 transition-colors">
+          ← Try a different option
+        </button>
+      </div>
+    );
+  }
+
+  if (!node) return null;
+
+  /* ── Question screen ── */
+  const stepCount = path.filter(s => !s.startsWith('result:')).length;
+
+  return (
+    <div className="p-6 space-y-5">
+      {/* Step dots */}
+      <div className="flex items-center justify-center gap-1.5">
+        {Array.from({ length: stepCount + (current === 'start' ? 0 : 0) }).map((_, i) => (
+          <span key={i} className={`h-2 rounded-full transition-all duration-300 ${i === stepCount - 1 ? 'w-5 bg-[#1B5E8C]' : 'w-2 bg-[#1B5E8C]/30'}`} />
+        ))}
+      </div>
+
+      <div className="text-center">
+        <p className="text-base font-bold text-slate-900">{node.question}</p>
+        {node.sub && <p className="mt-1 text-sm text-slate-400">{node.sub}</p>}
+      </div>
+
+      <div className="space-y-2.5">
+        {node.options.map(opt => (
+          <button
+            key={opt.next}
+            onClick={() => choose(opt.next)}
+            className="group w-full flex items-center gap-4 rounded-2xl border-2 border-slate-100 bg-white px-5 py-4 text-left hover:border-[#1B5E8C] hover:bg-[#E7F1F8] active:scale-[0.98] transition-all">
+            <span className="text-2xl">{opt.emoji}</span>
+            <span className="flex-1 text-sm font-semibold text-slate-700 group-hover:text-[#1B5E8C] transition-colors">{opt.label}</span>
+            <svg viewBox="0 0 24 24" className="w-4 h-4 text-slate-300 group-hover:text-[#1B5E8C] transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <polyline points="9,18 15,12 9,6" />
+            </svg>
+          </button>
+        ))}
+      </div>
+
+      {path.length > 1 && (
+        <button onClick={back} className="w-full text-sm text-slate-400 hover:text-slate-600 transition-colors">
+          ← Go back
+        </button>
+      )}
+    </div>
+  );
+}
+
 /* ─── Page ─────────────────────────────────────────────────── */
 export default function Home() {
   const [menuOpen, setMenuOpen]         = useState(false);
@@ -630,6 +753,7 @@ export default function Home() {
   const [bookDone, setBookDone]         = useState(false);
   const [bookData, setBookData]         = useState({ service: '', doctor: '', date: '', name: '', phone: '' });
   const [activeTool, setActiveTool]     = useState<string | null>(null);
+  const [showGuide, setShowGuide]       = useState(false);
   const [doctorSearch, setDoctorSearch] = useState('');
   const [doctorSpec, setDoctorSpec]     = useState('All Specialties');
   const [openFaq, setOpenFaq]           = useState<number | null>(null);
@@ -637,11 +761,21 @@ export default function Home() {
 
   useScrollReveal();
 
-  /* Lock body scroll when a tool modal is open */
+  /* Lock body scroll when a modal is open */
   useEffect(() => {
-    document.body.style.overflow = activeTool ? 'hidden' : '';
+    document.body.style.overflow = (activeTool || showGuide) ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [activeTool]);
+  }, [activeTool, showGuide]);
+
+  function handleGuideResult(dest: string) {
+    setShowGuide(false);
+    const scroll = (id: string) => setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 80);
+    if (dest === 'book')         return scroll('book');
+    if (dest === 'doctors')      return scroll('doctors');
+    if (dest === 'emergency')    return (window.location.href = 'tel:08028611472');
+    if (dest === 'whatsapp')     return window.open('https://wa.me/2348028611472', '_blank');
+    if (dest.startsWith('tool_')) { setTimeout(() => setActiveTool(dest.replace('tool_', '')), 80); }
+  }
 
   useEffect(() => {
     const onScroll = () => {
@@ -768,6 +902,18 @@ export default function Home() {
                     <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12,5 19,12 12,19" /></svg>
                   </a>
                 </div>
+
+                {/* Smart guide CTA */}
+                <button
+                  onClick={() => setShowGuide(true)}
+                  className="self-start flex items-center gap-2.5 rounded-full border border-white/25 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/20 active:scale-95 transition-all">
+                  {/* sparkle icon */}
+                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
+                  </svg>
+                  Not sure where to start? Let us guide you
+                </button>
+
                 <div className="flex flex-wrap gap-3 pt-2">
                   {['✓ Open 24/7', '✓ Specialist Doctors', '✓ Trusted by Families', '✓ Emergency Ready'].map(b => (
                     <span key={b} className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white">{b}</span>
@@ -1522,6 +1668,40 @@ export default function Home() {
           </div>
         </footer>
       </main>
+
+      {/* ── SMART GUIDE MODAL ─────────────────────────────────── */}
+      {showGuide && (
+        <div
+          className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
+          onClick={e => { if (e.target === e.currentTarget) setShowGuide(false); }}
+        >
+          <div className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-[#1B5E8C] to-[#2876a8]">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20">
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-white/60">Smart Guide</p>
+                  <p className="text-sm font-bold text-white">Find the right service</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowGuide(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 hover:bg-white/30 active:scale-90 transition-all">
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            {/* Quiz */}
+            <SmartGuide onResult={handleGuideResult} />
+          </div>
+        </div>
+      )}
 
       {/* ── HEALTH TOOL MODALS ────────────────────────────────── */}
       {activeTool && (
